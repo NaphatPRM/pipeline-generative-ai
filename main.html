@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q&A Website</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="question-container">
+    <h1>Assignment : Corpora Extraction</h1>
+    <input type="text" id="questionInput" placeholder="Type your question here">
+    <button class="button" onclick="askQuestion()">Submit</button>
+</div>
+
+<div class="response-container">
+    <div class="response-box">
+        <h2>ChatGPT Response</h2>
+        <div id="generativeResponse"></div>
+    </div>
+
+    <div class="response-box">
+        <h2>Library Search Response</h2>
+        <div id="googleResponse"></div>
+    </div>
+</div>
+
+</br></br>
+<div class="response-container">
+    <div class="response-box">
+        <h2>Google Search Response</h2>
+        <div id="libraryResponse"></div>
+    </div>
+</div>
+
+<script>
+    const apiKey = 'YOUR_API_KEY'; // The true API Key will be put later on 
+
+    function askQuestion() {
+        const question = $('#questionInput').val();
+
+        // Call Generative AI (ChatGPT)
+        fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                messages: [{role: "user", content: question}],
+                max_tokens: 150,  // Adjust as needed
+                model: 'gpt-3.5-turbo-1106', // Specify the GPT model
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.choices && data.choices.length > 0) {
+                console.log(data)
+                const chatGPTResponse = data.choices[0].message.content;
+                document.getElementById('generativeResponse').innerHTML = chatGPTResponse;
+            } else {
+                console.error('Invalid response from ChatGPT:', data);
+                document.getElementById('generativeResponse').innerHTML = 'Invalid response from ChatGPT.';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching response from ChatGPT:', error);
+            document.getElementById('generativeResponse').innerHTML = 'Error fetching response from ChatGPT.';
+        });
+
+        // Call Google Search API
+        $.ajax({
+            type: 'GET',
+            url: '/google-api', // Replace with the actual endpoint for your backend
+            data: { question: question },
+            success: function(response) {
+                $('#googleResponse').html(response);
+            },
+            error: function() {
+                $('#googleResponse').html('Error fetching response from Google Search.');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
